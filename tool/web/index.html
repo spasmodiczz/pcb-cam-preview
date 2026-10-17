@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCB 成品预演 · 嘉立创 CAM 规则</title>
+<style>
+:root{
+  --bg:#0e0f11; --panel:#16181b; --panel2:#1c1f23; --line:#2a2e34;
+  --tx:#e9e9e6; --tx2:#9a9ea6; --tx3:#6b7078;
+  --accent:#4fd1b5; --accent2:#2a9d8a; --warn:#e0a13a; --danger:#e25c5c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font:14px/1.65 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:36px 28px 90px}
+header h1{font-size:21px;font-weight:500;margin:0 0 6px;letter-spacing:.2px}
+header p{margin:0;color:var(--tx2);font-size:13px}
+.pill{display:inline-block;font-size:11.5px;color:var(--accent);
+  border:1px solid #23554c;background:#12211f;border-radius:99px;padding:2px 10px;margin-left:8px;vertical-align:2px}
+
+section{margin-top:32px}
+h2{font-size:14px;font-weight:500;color:var(--tx);margin:0 0 14px;
+  padding-bottom:9px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+h2 .n{width:18px;height:18px;border-radius:5px;background:#233;color:var(--accent);
+  font-size:11px;display:grid;place-items:center;flex:none}
+
+.drops{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.drop{position:relative;background:var(--panel);border:1px dashed #34383f;border-radius:12px;
+  padding:22px 20px;cursor:pointer;transition:.15s;min-height:112px;display:flex;flex-direction:column;justify-content:center}
+.drop:hover{border-color:#4a5058;background:var(--panel2)}
+.drop.on{border-style:solid;border-color:var(--accent2);background:#12211f}
+.drop.bad{border-color:#5a3131;background:#1d1517}
+.drop .t{font-size:13px;font-weight:500}
+.drop .s{font-size:12px;color:var(--tx3);margin-top:4px}
+.drop .f{font-size:12.5px;color:var(--accent);margin-top:9px;word-break:break-all}
+.drop input{display:none}
+.tag{position:absolute;top:12px;right:14px;font-size:11px;color:var(--tx3)}
+.tag.req{color:var(--warn)}
+
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px}
+.field label{display:block;font-size:11.5px;color:var(--tx3);margin-bottom:5px}
+.field select,.field input{width:100%;background:var(--panel);border:1px solid var(--line);
+  color:var(--tx);border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+.field select:focus,.field input:focus{border-color:#3d4a48}
+.adv{margin-top:12px;font-size:12px;color:var(--tx3)}
+.adv summary{cursor:pointer;color:var(--tx2)}
+.adv .opts{margin-top:10px;grid-template-columns:repeat(4,1fr)}
+
+.run{display:flex;align-items:center;gap:16px;margin-top:20px}
+button{background:var(--accent);color:#06241f;border:0;border-radius:9px;
+  padding:11px 26px;font-size:13.5px;font-weight:500;cursor:pointer;transition:.15s}
+button:hover{background:#61e0c4}
+button:disabled{background:#2b3a38;color:#5d7370;cursor:not-allowed}
+.hint{font-size:12px;color:var(--tx3)}
+
+.prog{margin-top:16px;display:none}
+.prog.on{display:block}
+.bar{height:3px;background:#22262b;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:30%;background:var(--accent);
+  animation:mv 1.3s ease-in-out infinite}
+@keyframes mv{0%{margin-left:-30%}100%{margin-left:100%}}
+.log{margin-top:10px;font:11.5px/1.6 ui-monospace,Consolas,monospace;color:var(--tx3);
+  max-height:96px;overflow:auto;white-space:pre-wrap}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+.kpi b{display:block;font-size:23px;font-weight:500;color:var(--accent);letter-spacing:-.3px}
+.kpi span{font-size:11.5px;color:var(--tx3)}
+.kpi.warn b{color:var(--warn)}
+.kpi.danger b{color:var(--danger)}
+
+.cmp{position:relative;background:#000;border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;user-select:none}
+.cmp img{display:block;width:100%}
+.cmp .b{position:absolute;inset:0;clip-path:inset(0 0 0 50%)}
+.cmp input{position:absolute;left:0;right:0;bottom:0;width:100%;margin:0;
+  appearance:none;height:26px;background:transparent;cursor:ew-resize}
+.cmp input::-webkit-slider-thumb{appearance:none;width:2px;height:26px;background:var(--accent);
+  box-shadow:0 0 0 1px #06241f}
+.cmp .lb{position:absolute;top:10px;font-size:11px;padding:3px 9px;border-radius:6px;
+  background:rgba(10,12,13,.78);color:#dfe3e6;pointer-events:none}
+.cmp .lb.l{left:10px}.cmp .lb.r{right:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid #22262b}
+th{color:var(--tx3);font-weight:400}
+td{font-variant-numeric:tabular-nums}
+.ok{color:var(--accent)}
+.muted{color:var(--tx3);font-size:12.5px}
+.rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.rowhead .h{font-size:13px}
+.dl{font-size:12px;color:var(--accent);text-decoration:none;border-bottom:1px dotted #2a5c53}
+.foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+  color:var(--tx3);font-size:11.5px;line-height:1.8}
+.err{background:#1d1517;border-left:2px solid var(--danger);padding:11px 14px;
+  border-radius:6px;color:#e8a8a8;font-size:13px;margin-top:12px}
+@media(max-width:860px){.drops,.two,.opts,.kpis{grid-template-columns:1fr}
+ .adv .opts{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>PCB 成品预演<span class="pill">嘉立创 CAM 规则</span></h1>
+  <p>下单前用板厂视角看成品：丝印会不会被开窗裁掉、挖孔在哪、阻焊露出什么颜色。</p>
+</header>
+
+<section>
+  <h2><span class="n">1</span>上传文件</h2>
+  <div class="drops">
+    <label class="drop" id="dropEda">
+      <span class="tag req">必填</span>
+      <span class="t">下单 Gerber（.zip）</span>
+      <span class="s">嘉立创EDA → 文件 → 导出 → PCB制板文件</span>
+      <span class="f" id="edaName"></span>
+      <input type="file" id="edaFile" accept=".zip">
+    </label>
+    <label class="drop" id="dropJlc">
+      <span class="tag">可选</span>
+      <span class="t">立创生产稿（.zip，含 ok/）</span>
+      <span class="s">加上它可以自检本工具的预测准不准</span>
+      <span class="f" id="jlcName"></span>
+      <input type="file" id="jlcFile" accept=".zip">
+    </label>
+  </div>
+
+  <div class="opts">
+    <div class="field"><label>阻焊颜色</label>
+      <select id="mask"><option value="white">白色</option><option value="black">黑色</option><option value="green">绿色</option></select></div>
+    <div class="field"><label>丝印颜色</label>
+      <select id="silk"><option value="black">黑色</option><option value="white">白色</option></select></div>
+    <div class="field"><label>表面处理</label>
+      <select id="finish"><option value="enig">沉金</option><option value="hasl">喷锡</option></select></div>
+    <div class="field"><label>渲染宽度</label>
+      <select id="width"><option value="1500">1500 px（快）</option><option value="2000" selected>2000 px</option><option value="3000">3000 px（细）</option></select></div>
+    <div class="field"><label>挖孔阈值</label>
+      <select id="cutoutMin"><option value="0.5">≥0.5mm</option><option value="1.0" selected>≥1.0mm</option><option value="2.0">≥2.0mm</option></select></div>
+  </div>
+
+  <details class="adv">
+    <summary>高级规则参数（默认按实测标定）</summary>
+    <div class="opts">
+      <div class="field"><label>丝印距开窗 clearance (mm)</label><input id="silkClearance" type="number" step="0.01" value="0"></div>
+      <div class="field"><label>阻焊开窗补偿 (mm)</label><input id="maskExpand" type="number" step="0.01" value="0"></div>
+      <div class="field"><label>图上标注挖孔</label>
+        <select id="annotate"><option value="1" selected>是</option><option value="0">否</option></select></div>
+      <div class="field"></div>
+    </div>
+  </details>
+
+  <div class="run">
+    <button id="go" disabled>开始预演</button>
+    <span class="hint" id="hint">先上传下单 Gerber</span>
+  </div>
+
+  <div class="prog" id="prog">
+    <div class="bar"><i></i></div>
+    <div class="log" id="log"></div>
+  </div>
+  <div id="errBox"></div>
+</section>
+
+<section id="result" style="display:none">
+  <h2><span class="n">2</span>结论</h2>
+  <div class="kpis" id="kpis"></div>
+</section>
+
+<section id="secCmp" style="display:none">
+  <h2><span class="n">3</span>设计图 ↔ 实际成品（拖动分割线对比）</h2>
+  <div class="rowhead"><span class="h">顶面</span><a class="dl" id="dlTop" target="_blank">下载</a></div>
+  <div class="cmp" id="cmpTop">
+    <img class="a" id="cmpTopA"><img class="b" id="cmpTopB">
+    <span class="lb l">设计原稿</span><span class="lb r">实际成品</span>
+    <input type="range" min="0" max="100" value="50">
+  </div>
+  <div class="rowhead" style="margin-top:22px"><span class="h">底面</span><a class="dl" id="dlBot" target="_blank">下载</a></div>
+  <div class="cmp" id="cmpBot">
+    <img class="a" id="cmpBotA"><img class="b" id="cmpBotB">
+    <span class="lb l">设计原稿</span><span class="lb r">实际成品</span>
+    <input type="range" min="0" max="100" value="50">
+  </div>
+</section>
+
+<section id="secHole" style="display:none">
+  <h2><span class="n">4</span>识别到的挖孔 / 挖槽</h2>
+  <div id="holeBox"></div>
+  <div class="two" style="margin-top:14px">
+    <img id="markT" style="width:100%;border:1px solid var(--line);border-radius:10px">
+    <img id="markB" style="width:100%;border:1px solid var(--line);border-radius:10px">
+  </div>
+</section>
+
+<section id="secLoss" style="display:none">
+  <h2><span class="n">5</span>会被裁掉的丝印</h2>
+  <div class="two">
+    <div><div class="rowhead"><span class="h">顶面</span></div><div id="lossTop"></div></div>
+    <div><div class="rowhead"><span class="h">底面</span></div><div id="lossBot"></div></div>
+  </div>
+  <div class="two" style="margin-top:14px">
+    <img id="lossImgT" style="width:100%;border:1px solid var(--line);border-radius:10px">
+    <img id="lossImgB" style="width:100%;border:1px solid var(--line);border-radius:10px">
+  </div>
+</section>
+
+<section id="secCheck" style="display:none">
+  <h2><span class="n">6</span>自检：与立创生产稿的吻合度</h2>
+  <div class="kpis" id="checkKpis"></div>
+  <div class="rowhead" style="margin-top:16px"><span class="h">预测 vs 生产稿（顶面）</span></div>
+  <div class="cmp" id="cmpChk">
+    <img class="a" id="chkA"><img class="b" id="chkB">
+    <span class="lb l">工具预测</span><span class="lb r">立创生产稿</span>
+    <input type="range" min="0" max="100" value="50">
+  </div>
+</section>
+
+<section id="secDl" style="display:none">
+  <h2><span class="n">7</span>导出</h2>
+  <p class="muted">完整 HTML 报告可离线打开、直接发给别人。</p>
+  <p><a class="dl" id="dlReport" target="_blank">下载完整报告 report.html</a> &nbsp;·&nbsp;
+     <a class="dl" id="dlStats" target="_blank">下载数据 stats.json</a></p>
+</section>
+
+<div class="foot">
+  规则说明：丝印落在阻焊开窗（露铜/露基材）范围内会被板厂删除，裁剪边界≈开窗边界；
+  参数由「原稿 ↔ 生产稿」实测标定，非照抄文档。挖孔来自钻孔文件（NPTH 或 ≥阈值的孔）。<br>
+  本工具做外观预测，不替代嘉立创「确认生产稿」的正式工程审核；未覆盖彩色丝印、阻焊桥、塞孔等特殊工艺。
+</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let up = {eda:null, jlc:null};
+
+function bind(slot, dropId, nameId){
+  const input = $(slot+'File'), drop = $(dropId), nm = $(nameId);
+  drop.addEventListener('click', e => { if(e.target.tagName!=='INPUT'){ input.click(); }});
+  input.addEventListener('change', () => input.files[0] && send(slot, input.files[0]));
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='#4fd1b5';}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='';}));
+  drop.addEventListener('drop', e=>{
+    const f = e.dataTransfer.files[0]; if(f) send(slot, f);
+  });
+}
+async function send(slot, file){
+  const drop = $(slot==='eda'?'dropEda':'dropJlc');
+  const nm = $(slot==='eda'?'edaName':'jlcName');
+  nm.textContent = '上传中…';
+  try{
+    const r = await fetch('/api/upload?slot='+slot+'&name='+encodeURIComponent(file.name), {
+      method:'POST', body:file
+    });
+    const j = await r.json();
+    if(j.error) throw new Error(j.error);
+    up[slot] = j.token;
+    drop.classList.add('on'); drop.classList.remove('bad');
+    nm.textContent = file.name + '  ·  ' + (file.size/1048576).toFixed(1) + ' MB';
+  }catch(err){
+    drop.classList.add('bad');
+    nm.textContent = '上传失败：' + err.message;
+  }
+  $('go').disabled = !up.eda;
+  $('hint').textContent = up.eda ? (up.jlc ? '将同时做自检' : '仅预测（未上传生产稿）') : '先上传下单 Gerber';
+}
+bind('eda','dropEda','edaName');
+bind('jlc','dropJlc','jlcName');
+
+document.querySelectorAll('.cmp input').forEach(r=>{
+  r.addEventListener('input', ()=>{
+    const b = r.parentElement.querySelector('.b');
+    b.style.clipPath = 'inset(0 0 0 '+r.value+'%)';
+  });
+});
+
+function fmt(n,d=2){ return (n==null||isNaN(n))?'—':Number(n).toFixed(d); }
+
+$('go').addEventListener('click', async ()=>{
+  if(!up.eda) return;
+  $('go').disabled = true; $('errBox').innerHTML='';
+  $('prog').classList.add('on'); $('result').style.display='none';
+  ['secCmp','secHole','secLoss','secCheck','secDl'].forEach(s=>$(s).style.display='none');
+  $('log').textContent = '正在启动分析…';
+
+  const body = {
+    eda: up.eda, jlc: up.jlc,
+    mask: $('mask').value, silk: $('silk').value, finish: $('finish').value,
+    width: +$('width').value, cutoutMin: +$('cutoutMin').value,
+    silkClearance: +$('silkClearance').value, maskExpand: +$('maskExpand').value,
+    annotate: $('annotate').value==='1'
+  };
+  const r = await fetch('/api/analyze', {method:'POST', body: JSON.stringify(body)});
+  const j = await r.json();
+  if(j.error){ fail(j.error); return; }
+  poll(j.job);
+});
+
+function fail(msg){
+  $('errBox').innerHTML = '<div class="err">'+msg+'</div>';
+  $('go').disabled = false;
+  $('prog').classList.remove('on');
+}
+
+async function poll(id){
+  const r = await fetch('/api/job?id='+id);
+  const j = await r.json();
+  if(j.error){ fail(j.error); return; }
+  if(j.log && j.log.length) $('log').textContent = j.log.join('\n');
+  const lg = $('log'); lg.scrollTop = lg.scrollHeight;
+  if(j.status==='done'){ render(id, j.stats); return; }
+  if(j.status==='error'){ fail(j.error || '分析失败'); return; }
+  setTimeout(()=>poll(id), 900);
+}
+
+function render(id, s){
+  $('prog').classList.remove('on');
+  $('go').disabled = false;
+  const u = f => '/r/'+id+'/'+f;
+  const st = s.stats || {};
+  const t = s.loss_top||[], b = s.loss_bottom||[], cut = st.cutouts||[];
+  const v = s.validation;
+
+  const kp = [];
+  kp.push(['danger', fmt(st.lost_top)+' mm²', '顶面丝印将被裁掉']);
+  kp.push(['danger', fmt(st.lost_bot)+' mm²', '底面丝印将被裁掉']);
+  kp.push(['warn', (st.lost_top_pct||0).toFixed(1)+'%', '顶面丝印损失比例']);
+  kp.push(['', cut.length, '识别到挖孔 / 挖槽']);
+  $('kpis').innerHTML = kp.map(([c,a,l])=>
+    '<div class="kpi '+c+'"><b>'+a+'</b><span>'+l+'</span></div>').join('');
+  $('result').style.display='block';
+
+  $('cmpTopA').src = u('asdesigned_top.png');  $('cmpTopB').src = u('predicted_top.png');
+  $('cmpBotA').src = u('asdesigned_bottom.png'); $('cmpBotB').src = u('predicted_bottom.png');
+  $('dlTop').href = u('predicted_top.png'); $('dlBot').href = u('predicted_bottom.png');
+  $('secCmp').style.display='block';
+
+  if(cut.length){
+    $('holeBox').innerHTML =
+      '<p class="muted">共 '+cut.length+' 处，已在成品图上用红色虚线圈标注。</p>'+
+      '<table><thead><tr><th>#</th><th>孔径</th><th>中心坐标 (mm)</th><th>面积 mm²</th></tr></thead><tbody>'+
+      cut.map((c,i)=>'<tr><td>'+(i+1)+'</td><td>⌀'+fmt(c.d)+'</td><td>('+fmt(c.x)+', '+fmt(c.y)+')</td><td>'+fmt(c.area)+'</td></tr>').join('')+
+      '</tbody></table>';
+    $('markT').src = u('marked_top.png');
+    $('markB').src = u('marked_bottom.png');
+    $('markT').style.display = 'block'; $('markB').style.display = 'block';
+  }else{
+    $('holeBox').innerHTML = '<p class="ok">未检出挖孔 / 挖槽。</p>';
+    $('markT').style.display = 'none'; $('markB').style.display = 'none';
+  }
+  $('secHole').style.display='block';
+
+  const tbl = (rows, side) => {
+    if(!rows.length) return '<p class="ok">此面没有明显损失。</p>';
+    return '<table><thead><tr><th>#</th><th>面积 mm²</th><th>中心 (mm)</th><th>尺寸</th></tr></thead><tbody>'+
+      rows.slice(0,25).map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+fmt(r.area)+'</td><td>('+fmt(r.cx)+', '+fmt(r.cy)+')</td><td>'+fmt(r.w,1)+'×'+fmt(r.h,1)+'</td></tr>').join('')+
+      '</tbody></table>' + (rows.length>25 ? '<p class="muted">…另有 '+(rows.length-25)+' 处，见完整报告</p>' : '');
+  };
+  $('lossTop').innerHTML = tbl(t,'t');
+  $('lossBot').innerHTML = tbl(b,'b');
+  $('lossImgT').src = u('silkloss_top.png');
+  $('lossImgB').src = u('silkloss_bottom.png');
+  $('secLoss').style.display='block';
+
+  if(v){
+    $('checkKpis').innerHTML =
+      '<div class="kpi"><b>'+v.pixel_agree.toFixed(2)+'%</b><span>成品图逐像素一致</span></div>'+
+      '<div class="kpi"><b>'+(v.iou_top*100).toFixed(1)+'%</b><span>顶面丝印几何 IoU</span></div>'+
+      '<div class="kpi"><b>'+(v.iou_bot*100).toFixed(1)+'%</b><span>底面丝印几何 IoU</span></div>'+
+      '<div class="kpi"><b>±'+(v.shift?Math.max(Math.abs(v.shift[0]),Math.abs(v.shift[1])):0)+'px</b><span>配准容差</span></div>';
+    $('chkA').src = u('predicted_top.png');
+    $('chkB').src = u('actual_top.png');
+    $('secCheck').style.display='block';
+  }
+
+  $('dlReport').href = u('report.html');
+  $('dlStats').href = u('stats.json');
+  $('secDl').style.display='block';
+  $('result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+</body>
+</html>

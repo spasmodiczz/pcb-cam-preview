@@ -1,0 +1,29 @@
+# ---- 助手工作区（含个人工作日志，不入库）----
+.workbuddy/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- 打包产物 ----
+build/
+dist/
+*.spec
+
+# ---- 运行时产物 ----
+out/
+tool/.cache/
+PCBCamPreview/
+
+# ---- 本地样本与生产信息（含个人设计/订单数据，不入库）----
+samples/
+生产信息.txt
+
+# ---- 系统 ----
+.DS_Store
+Thumbs.db
+desktop.ini
